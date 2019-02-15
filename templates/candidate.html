@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Candidate Page</h1>
+
+<h3> Name: {} </h3>
+<h3> Party: {} </h3>
+<h3> Opponent: {} </h3>
+<h3> District: {} </h3>
+
+<h3> Total Raised </h3>
+<h3> Spent </h3>
+
+
+
+<h3>Top Contributors</h3>
+
+<!-- for contributor in contributors, print all contributor information -->
+<ul>
+<li><h4>Org Name</h4>
+    <ul>
+        <li>Total Amount to Candidate</li>
+        <li>Spent</li>
+        <li> Cash-On-Hand</li>
+        <li>Link to Org page</li>
+    </ul>
+</li>
+</ul>
+
+
+<h3>Top Industries</h3>
+
+<!-- for industry in industries, print all industry information -->
+<ul>
+    <li><h4>Industry (name)</h4></li>
+    <ul>
+        <li>Total Amount </li>
+        <li>From PACs</li>
+        <li>From Individuals</li>
+    </ul>
+<ul>    
+
+{% endblock %}

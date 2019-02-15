@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+    <title>Campaign Finance 2018</title>
+</head>
+<body>
+
+
+<hr>
+
+{% for flash in get_flashed_messages() %}
+  {{ flash }}
+{% endfor %}
+
+{% block content %}
+  Put your body here.
+{% endblock %}
+
+</body>
+</html>

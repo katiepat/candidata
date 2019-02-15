@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>{{District_ID}} Goes Here!!</h1>
+
+<h2> Total Amount Spent in District Placeholder </h2>
+<h2> Top Industries in the District </h2>
+<h2> Top Contributors in the District (by total amount given to either or both candidates)</h2>
+
+<!-- for candidates with district code == to district_id, and who are running for the correct chamber -->
+{% for candidate in candidates %}
+<div>
+    <h2> Candidate placeholder </h2>
+    <h4> Party Placeholder </h4>
+    <h4> Chamber Placeholder </h4>
+
+    <br><br>
+    <h3> Total Spent Placeholder </h3>
+    <p> placeholder for reroute to candidate page</p>
+    
+</div>
+
+{% endfor %}
+<!-- <div>
+    <h2>Candidate Two placeholder </h2>
+    <h4> Party Placeholder </h4>
+    <h4> Chamber Placeholder </h4>
+
+    <br><br>
+    <h3> Total Spent Placeholder </h3>
+    <p> placeholder for reroute to candidate page</p>
+
+</div> -->
+
+
+{% endblock %}
