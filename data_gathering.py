@@ -6,6 +6,11 @@ import json
 import requests
 import time
 
+from sqlalchemy import func
+from server import app
+from model import Candidate, Candidate_Summary, Candidate_Industry, Industry, Organization, Candidate_Organization, connect_to_db, db
+
+
 # create variable to store api key
 api_key = '7812644905e2e95248492bd13c40168a'
 
@@ -18,23 +23,49 @@ completed = []
 url = 'https://opensecrets.org/api/'
 
 
-#create variable for url and params
-# response = requests.get(url, params=payload)
-
-cands = {}
+# cands = {}
 
 def handle_ref():
     """ Turn txt doc into python dictionary """
   
-
+    cands = {}
     # parse txt file and tokenize rows
     with open('cand_ids.txt') as txt:
         for line in txt:
-            (CID, cand_name, party, dist_id, fec_cand_id) = line.strip().split("\t")
+            (CID, cand_name, party_id, district_id, fec_cand_id) = line.strip().split("\t")
 
-            cands[CID] = [cand_name, party, dist_id]
+            
 
-    return cands
+        
+            candidate = Candidate(cid=CID, cand_name=cand_name, 
+                                party_id=party_id, district_id=district_id)
+        
+            db.session.add(candidate)
+
+            db.session.commit()
+
+
+            cands.append(CID)
+            # cands[CID] = [cand_name, party, dist_id]
+
+    print('All Done')
+
+    # return cands
+
+# def seed_ref(cands):
+#     """ transforms cands dictionary into json objects and instantiates as Candidate"""
+
+
+#     for cid, cands[cid] in cands:
+        
+#         candidate = Candidate(CID=CID, cand_name=cand_name, party_id=party_id, district_id=district_id)
+        
+#         db.session.add(candidate)
+
+#         db.session.commit()
+
+#     return print('All Done')    
+
 
 def get_cid_list():
     """ Gets list of all CIDs in dictionary and returns list of candidate ids"""
@@ -67,9 +98,8 @@ def get_cand_summary(cids):
         response = requests.get(url, params=payload)
 
         #instantiate class object and commit to db
-                
 
-        # cand_summaries.append(response)
+
 
         time.sleep(60)
        
@@ -166,7 +196,8 @@ def request_looping():
     # completed = completed.append(cids)
 
     # return completed
-
+if __name__ == "__main__":
+    connect_to_db(app)
         
 
 

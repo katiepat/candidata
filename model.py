@@ -12,16 +12,19 @@ db = SQLAlchemy()
 #Model definitions
 
 
+
+
+
 class Candidate_Summary(db.Model):
-    """Candidate summary class """    
+    """Financial summary information for specific candidate"""    
 
 
     __tablename__ = 'candidate_summaries'
 
-    cand_summary_id = db.Column(db.String(100), nullable=False, primary_key=True)
+    cand_summary_id = db.Column(db.Integer, nullable=False, autoincrement=True, primary_key=True)
 
     cid = db.Column(db.String(100), db.ForeignKey('candidates.cid'), nullable=False)
-    cand_name = db.Column(db.String(250), nullable=False)
+  
     state = db.Column(db.String(20), nullable=False)
     chamber = db.Column(db.String(100), nullable=False)
     first_elected = db.Column(db.String(100), nullable=True)
@@ -30,55 +33,14 @@ class Candidate_Summary(db.Model):
     cash_on_hand = db.Column(db.Integer, nullable=False)
     debt = db.Column(db.Integer, nullable=False)
 
+    candidate = db.relationship('Candidate', foreign_keys=[cid])
 
 
-
-class Candidate(db.Model):
-    """Candidate on website """
-
-    __tablename__ = 'candidates'
-
-
-    cid = db.Column(db.String(100), nullable=False, primary_key=True)
-    district_id = db.Column(db.String(100), nullable=False)
-    party_id = db.Column(db.String(50), nullable=False)
-    cand_summary_id =db.Column(db.String(100),
-                    db.ForeignKey('candidate_summaries.cand_summary_id'), 
-                    nullable=False)
-    top_industries = db.Column(db.String(100), 
-                    db.ForeignKey('candidate_industries.candidate_industry_id'), 
-                    nullable=False)
-    top_organizations = db.Column(db.String(100), 
-                        db.ForeignKey('candidate_organizations.candidate_org_id'),
-                        nullable=False)
-
-
-
-
-
-class Candidate_Industry(db.Model):
-
-
-
-    __tablename__ = "candidate_industries"
-
-    candidate_industry_id = db.Column(db.String(100), nullable=False, primary_key=True)
-    
-    cid = db.Column(db.String(100), db.ForeignKey('candidates.cid'), nullable=False)
-    industry_id = db.Column(db.String(100), db.ForeignKey('industries.industry_id'), nullable=False)
-
-    total = db.Column(db.Integer, nullable=False)
-    total_from_indivs = db.Column(db.Integer, nullable=True)
-    total_from_pacs =db.Column(db.Integer, nullable=True)
-
-    candidate = db.relationship('Candidate', backref=db.backref('candidate_industries', order_by=candidate_industry_id))
-
-    industry = db.relationship('Industry', backref=db.backref('candidate_industries', order_by=candidate_industry_id))
 
 
 
 class Industry(db.Model):
-    """Industry information """
+    """ Industry """
 
     __tablename__ = 'industries'
 
@@ -87,8 +49,72 @@ class Industry(db.Model):
     industry_name = db.Column(db.String(100), nullable=False)
 
 
+    
+    candidate_industries = db.relationship('Candidate_Industry')
+    
+    # candidate = db.relationship('Candidate', secondary='candidate_industry', backref='industries')
+
+class Candidate_Industry(db.Model):
+    """ Top industry contributions for specific candidate"""
+    """ Middle Table"""
+
+
+    __tablename__ = 'candidate_industries'
+
+    candidate_industry_id = db.Column(db.Integer, nullable=False, autoincrement=True, primary_key=True)
+    
+    cid = db.Column(db.String(100), db.ForeignKey('candidates.cid'), nullable=True)
+    industry_id = db.Column(db.String(100), db.ForeignKey('industries.industry_id'), nullable=True)
+
+    total = db.Column(db.Integer, nullable=True)
+    total_from_indivs = db.Column(db.Integer, nullable=True)
+    total_from_pacs =db.Column(db.Integer, nullable=True)
+
+    
+
+    candidate = db.relationship('Candidate', foreign_keys=[cid])
+
+    industry = db.relationship('Industry', foreign_keys=[industry_id])
+
+
+
+class Candidate(db.Model):
+    """Candidate """
+    """ Middle Table """
+
+    __tablename__ = 'candidates'
+
+
+    cid = db.Column(db.String(100), nullable=False, primary_key=True)
+    cand_name = db.Column(db.String(250), nullable=False)
+    party_id = db.Column(db.String(50), nullable=False)
+    district_id = db.Column(db.String(100), nullable=False)
+    
+    cand_summary_id = db.Column(db.Integer, 
+                    db.ForeignKey('candidate_summaries.cand_summary_id'), 
+                    nullable=True)
+                 
+    top_industries = db.Column(db.Integer,
+                    db.ForeignKey('candidate_industries.candidate_industry_id'), 
+                    nullable=True)
+                    
+    top_organizations = db.Column(db.Integer, 
+                        db.ForeignKey('candidate_organizations.candidate_org_id'), 
+                        nullable=True)
+                       
+    
+
+
+    cand_industries = db.relationship('Candidate_Industry', foreign_keys=[top_industries])
+    # industries = db.relationship('Industry', secondary='candidate_industries', backref='candidates')
+    summary = db.relationship('Candidate_Summary', foreign_keys=[cand_summary_id])
+    
+    cand_orgs = db.relationship('Candidate_Organization', foreign_keys=[top_organizations])
+    # organizations = db.relationship('Organization', secondary='candidate_organizations', backref='candidates')    
+
+
 class Organization(db.Model):
-    """Organization on website"""
+    """ Organization """
 
     __tablename__ = 'organizations'
 
@@ -140,22 +166,36 @@ class Organization(db.Model):
     gave_to_party = db.Column(db.Integer, nullable=True)
 
 
+    cand_orgs = db.relationship('Candidate_Organization')
+    # candidates = db.relationship('Candidate', secondary='candidate_organizations', backref='organizations' )
+
+
+
 
 
 class Candidate_Organization(db.Model):
-    """ """
+    """ Top Organizations for Specific Candidate """
+    """ Middle Table"""
+
+
+
     __tablename__ = 'candidate_organizations'
 
-    candidate_org_id = db.Column(db.String(100), nullable=False, primary_key=True)
+    candidate_org_id = db.Column(db.Integer, nullable=False, autoincrement=True, primary_key=True)
     
-    cid = db.Column(db.String(100), db.ForeignKey('candidates.cid'), nullable=False)
-    org_id = db.Column(db.String(100), db.ForeignKey('organizations.org_summary_id'), nullable=False)
+    cid = db.Column(db.String(100), db.ForeignKey('candidates.cid'), nullable=True)
+    org_id = db.Column(db.String(100), db.ForeignKey('organizations.org_summary_id'), nullable=True)
     total = db.Column(db.Integer, nullable=False)
-    pacs = db.Column(db.Integer, nullable=False)
+    pacs = db.Column(db.Integer, nullable=True)
+    individuals = db.Column(db.Integer, nullable=True)
 
-    candidate = db.relationship('Candidate', backref=db.backref('candidate_organizations', order_by=candidate_org_id))
+    orgs = db.relationship('Organization', foreign_keys=[org_id])
 
-    organization = db.relationship('Organization', backref=db.backref('candidate_organizations', order_by=candidate_org_id))
+    candidate = db.relationship('Candidate', foreign_keys=[cid])
+
+    # candidate = db.relationship('Candidate', backref=db.backref('candidate_organizations', order_by=candidate_org_id))
+
+    # organization = db.relationship('Organization', backref=db.backref('candidate_organizations', order_by=candidate_org_id))
 
 
 
