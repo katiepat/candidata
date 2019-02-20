@@ -3,5 +3,17 @@
 
 
   <h1>Organizations</h1>
- 
+
+<h3>Organization List</h3>
+  
+<ul>
+  
+  {% for organization in organizations %}
+    
+    <li>{{ organization.org_name }}</li>
+  
+  {% endfor %}
+
+</ul>
+
 {% endblock %}

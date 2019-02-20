@@ -6,7 +6,7 @@ from jinja2 import StrictUndefined
 from flask import Flask, render_template, request, flash, redirect, session
 from flask_debugtoolbar import DebugToolbarExtension
 
-from model import connect_to_db, db
+from model import Candidate, Candidate_Summary, Candidate_Industry, Industry, Organization, Candidate_Organization, connect_to_db, db
 
 
 app = Flask(__name__)
@@ -14,6 +14,8 @@ app = Flask(__name__)
 app.secret_key = "ABC"
 
 app.jinja_env.undefined = StrictUndefined
+
+
 
 STATES = {'AL': 'Alabama', 'AK':'Alaska', 'AZ':'Arizona', 'AR':'Arkansas', 
         'CA': 'California', 'CO':'Colorado', 'CT':'Connecticut', 'DE': 'Delaware',
@@ -34,9 +36,16 @@ def index():
 
     return render_template("homepage.html")
 
-@app.route('/districts')
+@app.route('/districts', methods=['GET'])
 def show_districts():
     """Shows list of districts by state"""
+    
+    #make this an ajax request???
+
+    state = request.args.get('state')
+    chamber = request.args.get('chamber')
+
+
 
     return render_template("districts.html", states=STATES)
 
@@ -48,10 +57,12 @@ def district_race(district_id):
     #write query here --> gets which district to display
     #district_id = db.query.get(district_id)
 
+    state = request.args.get('state')
+    chamber = request.args.get('chamber')
 
+    candidates = Candidate.query.filter(Candidate.Candidate_Summary.state == state, Candidate.Candidate_Summary.chamber == chamber).all()
 
-    #write query to get candidates in each district --> store in cand_ids list
-   #candidates = Candidate.query.filter(Candidate.district_id = Candidate.district_id).all()
+    
 
     return render_template("district.html", district=district_id, candidates=candidates) 
 
@@ -62,7 +73,8 @@ def candidates_list():
 
     return render_template("candidates.html", states=STATES)
 
-@app.route('/candidates/<int:cand_id>')
+
+@app.route('/candidates/<int:cid>')
 def candidate_cycle_summary(cid):   
     """ Get summary information for candidate, based on input id """
 
@@ -77,12 +89,18 @@ def candidate_cycle_summary(cid):
 def organization_list():
     """show list of organizations who were top contributors to 2018 cycle"""
 
-    return render_template("organizations.html")
+    organization_list = Organization.query.all()
+
+    return render_template("organizations.html", organizations=organization_list)
+
+
 
 
 @app.route('/organizations/<int:org_id>', methods=['GET'])
 def get_organization_summary(org_id):
     """display organization summary"""
+
+    organization = Organization.query.get(org_id)
 
     return render_template("organization.html", organization=organization)
 
@@ -95,7 +113,7 @@ if __name__ == "__main__":
     # that we invoke the DebugToolbarExtension
     app.debug = True
 
-    # connect_to_db(app)
+    connect_to_db(app)
 
     # Use the DebugToolbar
     DebugToolbarExtension(app)
