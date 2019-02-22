@@ -140,42 +140,55 @@ def get_cand_industries(cids):
 
             json.dump(candidate_industries, open('data/top_industries.json', 'a'))
 
-            candidate_industries = candidate_industries['response']['industries']
+            if type(candidate_industries) == dict:
 
-            cid = candidate_industries['@attributes']['cid']
+                candidate_industries = candidate_industries['response']['industries']
 
+                cid = candidate_industries['@attributes']['cid']
+
+               
+                industry_list = candidate_industries['industry']
+
+                if type(industry_list) == dict:
+
+                    for industry in industry_list:
+
+                        industry_id = industry['@attributes']['industry_code']
+                        industry_name = industry['@attributes']['industry_name']
+                        indivs = float(industry['@attributes']['indivs'])
+                        pacs = float(industry['@attributes']['pacs'])
+                        total = float(industry['@attributes']['total'])
+
+                        if Industry.query.get(industry_id):
+
+
+                            cand_industry = Candidate_Industry(cid=cid, industry_id=industry_id, 
+                                            total=total, total_from_indivs=indivs, 
+                                            total_from_pacs=pacs)
+
+                        else:
+
+                            industry = Industry(industry_id=industry_id, industry_name=industry_name)
+
+                            cand_industry = Candidate_Industry(cid=cid, industry_id=industry_id, 
+                                            total=total, total_from_indivs=indivs, 
+                                            total_from_pacs=pacs)
+            
+                            db.session.add(industry)
+                        
+                        db.session.add(cand_industry)
+
+                    time.sleep(30)
+
+            db.session.commit()
            
-            industry_list = candidate_industries['industry']
-
-            for industry in industry_list:
-
-                industry_id = industry['@attributes']['industry_code']
-                industry_name = industry['@attributes']['industry_name']
-                indivs = float(industry['@attributes']['indivs'])
-                pacs = float(industry['@attributes']['pacs'])
-                total = float(industry['@attributes']['total'])
-
-                industry = Industry(industry_id=industry_id, industry_name=industry_name)
-
-                cand_industry = Candidate_Industry(cid=cid, industry_id=industry_id, 
-                                total=total, total_from_indivs=indivs, 
-                                total_from_pacs=pacs)
-
-
-                db.session.add(industry)
-                db.session.add(cand_industry)
-
-                time.sleep(30)
-
-        db.session.commit()
-        db.session.commit()
 
 
 
-        
-        
-   
-    return print('All Done')    
+            
+            
+       
+        return print('All Done')    
 
 
 
@@ -206,25 +219,15 @@ def get_org_id(org_name):
         organizations = response.json()
 
         json.dump(organizations, open('data/get_org_id.json', 'a'))
-
-
-
         
 
         
         orgs = organizations['response']['organization']
 
 
-
-        # print(orgs['@attributes'])
-
-    # for name in org:
-        # print(type(orgs['@attributes']))
-
         if type(orgs) is list:
 
-            org_ids = []
-
+            
             for org in orgs:
 
 
@@ -233,8 +236,12 @@ def get_org_id(org_name):
 
                 # org_ids.append(org_id)
 
-                org_id = get_org_summary(org_id)
-                return org_ids
+                if Organization.query.get(org_id) == None:
+
+                    org_id = get_org_summary(org_id)
+
+                    print('All Done')
+                # return org_ids
         
 
         else:
@@ -242,12 +249,14 @@ def get_org_id(org_name):
             org_id = orgs['@attributes']['orgid']
             org_name = orgs['@attributes']['orgname']
 
-            org_summary = get_org_summary(org_id)
+            if Organization.query.get(org_id) == None:
 
-            org_ids = org_id
+                org_summary = get_org_summary(org_id)
+
+                print('All Done')
             # print('All Done')
 
-            return org_ids       
+            # return org_ids       
 
 
 
@@ -269,46 +278,55 @@ def get_cand_contributions(cids):
 
         if response:
         
-        #instantiate class object and commit to db
+        
 
             organizations = response.json()
 
+            
+
+
             json.dump(organizations, open('data/top_contributors_backup.json', 'a'))
 
-            organizations = organizations['response']['contributors']
+            if organizations == 'Resource not found':
+                pass
 
-            cid = organizations['@attributes']['cid']
+            else:    
 
-            # orgs = organizations['contributor']
+                organizations = organizations['response']['contributors']
 
-            organizations = organizations['contributor']
+                if organizations:
 
-            for organization in organizations:
-                org_name = organization['@attributes']['org_name']
-                total = float(organization['@attributes']['total'])
-                pacs = float(organization['@attributes']['pacs'])
-                indivs = float(organization['@attributes']['indivs'])
+                    cid = organizations['@attributes']['cid']
+
+                    # orgs = organizations['contributor']
+
+                    organizations = organizations['contributor']
+
+                    if type(organizations) != str:
+
+                        for organization in organizations:
+                            if type(organization) == dict:
+
+                                org_name = organization['@attributes']['org_name']
+                                total = float(organization['@attributes']['total'])
+                                pacs = float(organization['@attributes']['pacs'])
+                                indivs = float(organization['@attributes']['indivs'])
 
 
-                # org_id = get_org_id(org_name)  
+                                # org_id = get_org_id(org_name)  
 
-                cand_orgs = Candidate_Organization(cid=cid, total=total, pacs=pacs, individuals=indivs)
-                db.session.add(cand_orgs)
+                                cand_orgs = Candidate_Organization(cid=cid, total=total, pacs=pacs, individuals=indivs)
+                                
+                                db.session.add(cand_orgs)
+                                
+
+                                
+                                org = get_org_id(org_name)
+
+                               
+                                db.session.commit()
                 
-
-                # org_name = org_name.replace(' ', '')
-
-                org = get_org_id(org_name)
-
-                # if org != None:
-
-                #     org_summary = get_org_summary(org)
-
-                    # db.session.add(org_summary)
-
-                db.session.commit()
-        
-            time.sleep(30)
+                                time.sleep(30)
 
         #pause for one min for each request
 
@@ -364,60 +382,37 @@ def get_org_summary(org_id):
         db.session.commit()
 
 
-
-
-
-
-# def get_org_id(org_name):
-
-#     #from top contributors table get names of all orgs not in org table
-#     #save in variable
-
-#     # if not send api request to get json object using names saved above
-   
-#    # if db.session.query('org_name' == org_name)
-
-
-#     # for org_name in orgs:
-
-#     payload = {'method' : 'getOrgs',
-#                 'apikey': api_key,
-#                 'org': org_name,
-#                 'output': 'json'}
-    
-#     response = requests.get(url, params=payload)
-
-#     if response:
-#         org_id = response.json()
-
-
-#         org_id = org_id['orgid']
-#         org_name = org_id['orgname']
-
-#         org_id = get_org_summary(org_id)
-
-#         print('All Done')
-
-#     return org_id   
-
         
 
 
 
-def get_daily_list(start_index, end_index):
+def get_daily_list():
 
     #figure out how to request a certain number of items every day
 
     # ref = handle_ref()
 
-    cids = get_cid_list() #splice to two hundred
+    candidate_ids = []
 
-    daily_list = cids[:DAILY_LIMIT]
+    candidates_to_do = []
+
+    with open('cand_ids.txt') as txt:
+        for line in txt:
+            (CID, cand_name, party_id, district_id, fec_cand_id) = line.strip().split("\t")
+
+            candidate_ids.append(CID)
+
+
+    return candidate_ids          
+
+
+   
+
+   
 
 
 
 
-    return daily_limit
 
 
 

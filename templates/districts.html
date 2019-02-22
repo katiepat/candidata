@@ -6,7 +6,7 @@
 
  <p> Placeholder for selecting a state and a chamber to search</p>
 
-<form action="/districts" method="get">
+<form action="/districts" method="GET">
  
  Select a State:
  <select name='state'>
@@ -23,4 +23,12 @@ Select a Chamber:
 
 <input type='submit'>
 </form>
+
+<ul>
+{% for candidate in candidates %}
+
+    <li>{{ candidate.cand_name }}</li>
+
+{% endfor %}
+</ul>
 {% endblock %}

@@ -104,11 +104,11 @@ class Candidate(db.Model):
     
 
 
-    cand_industries = db.relationship('Candidate_Industry', foreign_keys=[candidate_industry_id])
+    cand_industries = db.relationship('Candidate_Industry', foreign_keys=[top_industries])
     # industries = db.relationship('Industry', secondary='candidate_industries', backref='candidates')
     summary = db.relationship('Candidate_Summary', foreign_keys=[cand_summary_id])
     
-    cand_orgs = db.relationship('Candidate_Organization', foreign_keys=[candidate_org_id])
+    cand_orgs = db.relationship('Candidate_Organization', foreign_keys=[top_organizations])
     # organizations = db.relationship('Organization', secondary='candidate_organizations', backref='candidates')    
 
 

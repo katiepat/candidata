@@ -30,6 +30,10 @@ STATES = {'AL': 'Alabama', 'AK':'Alaska', 'AZ':'Arizona', 'AR':'Arkansas',
         'UT': 'Utah', 'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia',
         'WI': 'Wisconsin', 'WY': 'Wyoming'}
 
+#########################################################################################################
+
+
+
 @app.route('/')
 def index():
     """Homepage."""
@@ -37,41 +41,40 @@ def index():
     return render_template("homepage.html")
 
 @app.route('/districts', methods=['GET'])
-def show_districts():
-    """Shows list of districts by state"""
+def get_districts():
+    """Shows form to get districts by state"""
+
     
-    #make this an ajax request???
+
+
+    return render_template("districts.html", states=STATES, candidates=candidates)
+
+
+
+
+@app.route('/candidates', methods=['GET'])
+def candidates_list():
+    """Show list of Candidates"""
+
+    candidates = Candidate.query.all()
+
+    return render_template("candidate_form.html", states=STATES, candidates=candidates)
+
+
+
+@app.route('/candidates', methods=['GET'])
+def get_candidate_form():
 
     state = request.args.get('state')
-    chamber = request.args.get('chamber')
 
-
-
-    return render_template("districts.html", states=STATES)
-
-
-@app.route('/districts/<int:district_id>', methods=['GET'])
-def district_race(district_id):
-    """Show information for selected district"""
-
-    #write query here --> gets which district to display
-    #district_id = db.query.get(district_id)
-
-    state = request.args.get('state')
     chamber = request.args.get('chamber')
 
     candidates = Candidate.query.filter(Candidate.Candidate_Summary.state == state, Candidate.Candidate_Summary.chamber == chamber).all()
 
-    
-
-    return render_template("district.html", district=district_id, candidates=candidates) 
+    return render_template('candidates.html', candidates=candidates)
 
 
-@app.route('/candidates')
-def candidates_list():
-    """Show list of Candidates"""
 
-    return render_template("candidates.html", states=STATES)
 
 
 @app.route('/candidates/<int:cid>')
@@ -79,9 +82,13 @@ def candidate_cycle_summary(cid):
     """ Get summary information for candidate, based on input id """
 
     #write query for cid in db--> return summary information
-    #candidate = Candidate.query.get(cid)
+    candidate = Candidate.query.get(cid)
 
     return render_template("candidate.html", candidate=candidate)
+
+
+
+
 
 
 
@@ -96,13 +103,49 @@ def organization_list():
 
 
 
-@app.route('/organizations/<int:org_id>', methods=['GET'])
-def get_organization_summary(org_id):
-    """display organization summary"""
 
-    organization = Organization.query.get(org_id)
 
-    return render_template("organization.html", organization=organization)
+# @app.route('/organizations/<int:org_summary_id>', methods=['POST'])
+# def get_organization_summary(org_summary_id):
+#     """display organization summary"""
+
+
+
+#     organization = Organization.query.get(org_summary_id).all()
+
+#     return render_template('organization.html', organization=organization)
+
+
+# @app.route('/districts', methods=['GET'])
+# def get_district_form():
+#     """ shows list of districts by state"""
+
+#     state = request.args.get('state')
+#     chamber = request.args.get('chamber')
+
+#     candidates = Candidate_Summary.query.filter(Candidate_Summary.state == state, Candidate_Summary.chamber == chamber).all()
+
+
+
+#     return render_template('districts_by_state.html', candidates=candidates)
+
+
+
+# @app.route('/districts/<int:district_id>', methods=['GET'])
+# def district_race(district_id):
+#     """Show information for selected district"""
+
+    
+
+#     state = request.args.get('state')
+#     chamber = request.args.get('chamber')
+
+#     candidates = Candidate.query.filter(Candidate.Candidate_Summary.state == state, Candidate.Candidate_Summary.chamber == chamber).all()
+
+    
+
+#     return render_template("district.html", district=district_id, candidates=candidates) 
+
 
 
 
