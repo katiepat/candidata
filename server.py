@@ -56,9 +56,11 @@ def get_districts():
 def candidates_list():
     """Show list of Candidates"""
 
-    candidates = Candidate.query.all()
+    candidates = Candidate_Summary.query.all()
 
-    return render_template("candidate_form.html", states=STATES, candidates=candidates)
+
+
+    return render_template("candidates.html", states=STATES, candidates=candidates)
 
 
 
@@ -69,7 +71,7 @@ def get_candidate_form():
 
     chamber = request.args.get('chamber')
 
-    candidates = Candidate.query.filter(Candidate.Candidate_Summary.state == state, Candidate.Candidate_Summary.chamber == chamber).all()
+    candidates = Candidate_Summary.query.filter(Candidate_Summary.state==state, Candidate_Summary.chamber==chamber).all()
 
     return render_template('candidates.html', candidates=candidates)
 
@@ -77,14 +79,24 @@ def get_candidate_form():
 
 
 
-@app.route('/candidates/<int:cid>')
+@app.route('/candidates/<cid>', methods=['GET'])
 def candidate_cycle_summary(cid):   
     """ Get summary information for candidate, based on input id """
 
     #write query for cid in db--> return summary information
     candidate = Candidate.query.get(cid)
 
-    return render_template("candidate.html", candidate=candidate)
+    candidate_summary = Candidate_Summary.query.filter(Candidate_Summary.cid == cid).all()
+
+    contributors = Candidate_Organization.query.filter(Candidate_Organization.cid == cid).all()
+
+    industries = Candidate_Industry.query.filter(Candidate_Industry.cid == cid).all()
+
+    return render_template("candidate.html", 
+                        candidate=candidate,
+                        candidate_summary=candidate_summary, 
+                        contributors=contributors, 
+                        industries=industries)
 
 
 
@@ -105,15 +117,15 @@ def organization_list():
 
 
 
-# @app.route('/organizations/<int:org_summary_id>', methods=['POST'])
-# def get_organization_summary(org_summary_id):
-#     """display organization summary"""
+@app.route('/organizations/<org_summary_id>', methods=['GET'])
+def get_organization_summary(org_summary_id):
+    """display organization summary"""
 
 
 
-#     organization = Organization.query.get(org_summary_id).all()
+    organization = Organization.query.get(org_summary_id)
 
-#     return render_template('organization.html', organization=organization)
+    return render_template('organization.html', organization=organization)
 
 
 # @app.route('/districts', methods=['GET'])

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h1>{{ organization.org_name }}/h1>
+<h1>{{ organization.org_name }}</h1>
 
 <h4> Number of members : {{ organization.num_members_invested }}
 
@@ -16,9 +16,9 @@
     <li>lobbying : {{ organization.total_spent_on_lobbying }}</li>
     <li>outside money : {{ organization.total_spent_on_outside_money }}</li>
     <li>gave to pac : {{ organization.gave_to_pac }}</li>
-    <li>gave to party : {{ organization.gave_to_pary }}</li>
+    <li>gave to party : {{ organization.gave_to_party }}</li>
     <li>gave to 527 : {{ organization.gave_to_527 }}</li>
-    <li>gave to candidate : {{ gave_to_cand }}</li>
+    <li>gave to candidate : {{ organization.gave_to_cand }}</li>
 
 </ul>
 

@@ -63,8 +63,6 @@ def get_cand_summary(cids):
     """ takes in list of candidate ids, creates request and returns list of responses"""
     
 
-    
-
     for cid in cids:
 
         payload = {'method': 'candSummary',
@@ -196,15 +194,6 @@ def get_cand_industries(cids):
 
 def get_org_id(org_name):
 
-    #from top contributors table get names of all orgs not in org table
-    #save in variable
-
-    # if not send api request to get json object using names saved above
-   
-   # if db.session.query('org_name' == org_name)
-
-
-    # for org_name in orgs:
 
     payload = {'method' : 'getOrgs',
                 'apikey': api_key,
@@ -278,11 +267,7 @@ def get_cand_contributions(cids):
 
         if response:
         
-        
-
             organizations = response.json()
-
-            
 
 
             json.dump(organizations, open('data/top_contributors_backup.json', 'a'))
@@ -412,32 +397,6 @@ def get_daily_list():
 
 
 
-
-
-
-
-# def request_looping():
-#     """runs loop for data requests """
-    
-
-#     #gets list of 200 candidate ids
-#     # cids = get_daily_list()
-    
-#     #gets candidates summary using result of get_daily_list()
-#     get_cand_summary(cids)
-
-#     time.sleep(30)
-
-    
-
-    
-#     #get top candidate industries using result of get_daily_list()
-#     get_cand_industries(cids)
-
-#     time.sleep(30)
-
-#     #get top contributors using result of get_daily_list()
-#     get_cand_contributions(cids)
 
 
 

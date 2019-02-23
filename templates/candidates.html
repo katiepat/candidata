@@ -5,11 +5,13 @@
 
 <ul>
 
-{% for candidate.district_id in candidates %}
+{% for candidate in candidates %}
 
-    {{ candidate.district_id }}
-    <li>{{ candidate.cand_name }} : {{ candidate.candidate_summary.total }} </li>
+    
+    <li><a href='/candidates/{{ candidate.cid }}'>{{ candidate.candidate.cand_name }}</a>: ${{ candidate.total }} </li>
 
 {% endfor %}
+
+{% endblock %}
 
 </ul>    
