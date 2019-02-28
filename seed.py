@@ -21,20 +21,13 @@ payload = {}
 
 url = 'https://opensecrets.org/api/'
 
-LAST_UPDATED = {}
-
-DAILY_LIMIT = 200
 
 
-#display on html (move to server file)
-CONTRIBUTORS_NOTICE = ""
-# cands = {}
 
 def handle_ref():
     """ Turn txt doc into python dictionary """
   
-    # cids = []
-    # parse txt file and tokenize rows
+   
     with open('cand_ids.txt') as txt:
         for line in txt:
             (CID, cand_name, party_id, district_id, fec_cand_id) = line.strip().split("\t")
@@ -107,11 +100,7 @@ def get_cand_summary(cids):
 
             db.session.commit()
         
-        # else:
-        #     pass    
-
-
-        time.sleep(30)
+      
 
     return print('All Done')    
        
@@ -136,64 +125,75 @@ def get_cand_industries(cids):
         if response:
             candidate_industries = response.json()
 
+            # adds json to backup file
             json.dump(candidate_industries, open('data/top_industries.json', 'a'))
 
-            if type(candidate_industries) == dict:
-
-                candidate_industries = candidate_industries['response']['industries']
-
-                cid = candidate_industries['@attributes']['cid']
-
-               
-                industry_list = candidate_industries['industry']
-
-                if type(industry_list) == dict:
-
-                    for industry in industry_list:
-
-                        industry_id = industry['@attributes']['industry_code']
-                        industry_name = industry['@attributes']['industry_name']
-                        indivs = float(industry['@attributes']['indivs'])
-                        pacs = float(industry['@attributes']['pacs'])
-                        total = float(industry['@attributes']['total'])
-
-                        if Industry.query.get(industry_id):
-
-
-                            cand_industry = Candidate_Industry(cid=cid, industry_id=industry_id, 
-                                            total=total, total_from_indivs=indivs, 
-                                            total_from_pacs=pacs)
-
-                        else:
-
-                            industry = Industry(industry_id=industry_id, industry_name=industry_name)
-
-                            cand_industry = Candidate_Industry(cid=cid, industry_id=industry_id, 
-                                            total=total, total_from_indivs=indivs, 
-                                            total_from_pacs=pacs)
             
-                            db.session.add(industry)
-                        
+            #format json response
+            candidate_industries = candidate_industries['response']['industries']
+            
+            
+
+            # save candidate id
+            cid = candidate_industries['@attributes']['cid']
+
+           # gets the list of industries from the response
+            industry_list = candidate_industries['industry']
+
+            
+            #loops through industry list
+            for industry in industry_list:
+
+                if type(industry) == dict:
+
+                    industry_id = industry['@attributes']['industry_code']
+                    industry_name = industry['@attributes']['industry_name']
+                    indivs = float(industry['@attributes']['indivs'])
+                    pacs = float(industry['@attributes']['pacs'])
+                    total = float(industry['@attributes']['total'])
+
+                    # checks industry table for industry id
+                    if Industry.query.get(industry_id):
+
+
+                        #if industry is in the table, only instantiate candidate_industry object
+                        cand_industry = Candidate_Industry(cid=cid, industry_id=industry_id, 
+                                        total=total, total_from_indivs=indivs, 
+                                        total_from_pacs=pacs)
+
                         db.session.add(cand_industry)
+                        db.session.commit()
 
-                    time.sleep(30)
+                    else:
 
-            db.session.commit()
-           
+                        #if industry is not in table, instantiate both industry object and candidate_industry object
+                        industry = Industry(industry_id=industry_id, industry_name=industry_name)
+
+                        cand_industry = Candidate_Industry(cid=cid, industry_id=industry_id, 
+                                        total=total, total_from_indivs=indivs, 
+                                        total_from_pacs=pacs)
+        
+                        db.session.add(industry)
+                    
+                        db.session.add(cand_industry)
+                        db.session.commit()
+
+            # time.sleep(30)
+
+    db.session.commit()
+       
 
 
 
             
             
        
-        return print('All Done')    
-
-
+    return print('All Done')    
 
 
 
 def get_org_id(org_name):
-
+    """ function that makes API call to CRP to check for org_id"""
 
     payload = {'method' : 'getOrgs',
                 'apikey': api_key,
@@ -217,43 +217,41 @@ def get_org_id(org_name):
         if type(orgs) is list:
 
             
+            # org_ids = []
+
             for org in orgs:
 
 
                 org_id = org['@attributes']['orgid']
                 org_name = org['@attributes']['orgname']
 
-                # org_ids.append(org_id)
 
-                if Organization.query.get(org_id) == None:
+                # checks to see if org is in db and if not calls get_org_summary function using id derived from API response
+                if Organization.query.filter(Organization.org_name == org_name).all() == None:
 
-                    org_id = get_org_summary(org_id)
+                #    
 
+                    org_summary = get_org_summary(org_id)
+
+                   
                     print('All Done')
-                # return org_ids
-        
 
-        else:
+                    #returns true if org summary object instantiated
+                    return True    
+            
+    else:
+        #returns false if org summary object not instantiated
+        return False    
 
-            org_id = orgs['@attributes']['orgid']
-            org_name = orgs['@attributes']['orgname']
 
-            if Organization.query.get(org_id) == None:
 
-                org_summary = get_org_summary(org_id)
-
-                print('All Done')
-            # print('All Done')
-
-            # return org_ids       
+             
 
 
 
     
 def get_cand_contributions(cids):
     """ takes in list of candidate ids and returns list of response objects"""                           
-
-    
 
 
     for cid in cids:
@@ -283,7 +281,6 @@ def get_cand_contributions(cids):
 
                     cid = organizations['@attributes']['cid']
 
-                    # orgs = organizations['contributor']
 
                     organizations = organizations['contributor']
 
@@ -295,28 +292,52 @@ def get_cand_contributions(cids):
                                 org_name = organization['@attributes']['org_name']
                                 total = float(organization['@attributes']['total'])
                                 pacs = float(organization['@attributes']['pacs'])
-                                indivs = float(organization['@attributes']['indivs'])
+                                indivs = float(organization['@attributes']['indivs']) 
+
+                                #create candidate_org object using new 
 
 
-                                # org_id = get_org_id(org_name)  
-
-                                cand_orgs = Candidate_Organization(cid=cid, total=total, pacs=pacs, individuals=indivs)
+                                cand_orgs = Candidate_Organization(cid=cid, org_name=org_name, total=total, pacs=pacs, individuals=indivs)
                                 
                                 db.session.add(cand_orgs)
-                                
 
-                                
-                                org = get_org_id(org_name)
+                                db.session.commit()
+
+                                #if org_id is true --> organization was instantiated in org_summary function
+                                org_id = get_org_id(org_name)
+
+                                #checks to see if org name is in the organization table
+                                org_query = Organization.query.filter(Organization.org_name == org_name).first()
+                             
+                                #if org wasn't instantiated in the get_org_id function and if the database doesn't return an object, instantiate an org object
+                                if org_id == False and org_query == None:
+
+                                    
+                                    
+                                    organization = Organization(org_name=org_name, total=total, total_from_org_pac=pacs, total_from_indivs=indivs)
+
+                                    db.session.add(organization)
+                                    db.session.commit()
+
+
+                                #if org wasn't instantiated in the get_org_id but database is returning an org object with that name
+                                elif org_id == False and org_query != None:
+
+                                    #updates org totals, and commit to database
+
+                                    org_query.total += total
+
+                                    org_query.total_from_org_pac += pacs
+
+                                    org_query.total_from_indivs += indivs
+
+                                    db.session.commit()
+
+
+
 
                                
-                                db.session.commit()
-                
-                                time.sleep(30)
 
-        #pause for one min for each request
-
-    
- 
 def get_org_summary(org_id):
 
 
@@ -356,7 +377,7 @@ def get_org_summary(org_id):
         
 
 
-        organization = Organization(org_summary_id=org_id, org_name=org_name, total=total,
+        organization = Organization(org_name=org_name, total=total,
                         total_from_indivs=indivs, total_from_org_pac=pacs, total_soft_money=soft, 
                         total_from_527=tot527, total_to_dems=dems, total_to_repubs=repubs, 
                         total_spent_on_lobbying=lobbying, total_spent_on_outside_money=outside, num_members_invested=mems_invested, 
@@ -366,20 +387,58 @@ def get_org_summary(org_id):
         db.session.add(organization)
         db.session.commit()
 
+def get_house_winners():
 
+    with open('data/district_house_winners.txt') as txt:
+        for line in txt:
+            (name, state, district_num) = line.strip().split()
+
+            candidate_query = Candidate.query.filter(Candidate.cand_name == name).all()
+
+            if candidate_query:
+                candidate_query.win = True
+
+
+
+def get_senate_winners():
+    """ seeds list of winner"""
+
+
+
+    with open('data/senate_winners.txt') as txt:
+        for line in txt:
+            name = line.strip().split()
+
+            candidate_query = Candidate.query.filter(Candidate.cand_name == name).all()
+
+            if candidate_query:
+                candidate_query.win = True                
         
 
+# def seed_db_org_info():
+#     """ uses information from first db and seeds into second db"""
+
+
+#     organizations = Organization.query.all()
+
+#     for organization in organization:
+
+#         org_name = organization.org_name
+#         num_members_invested = organization.num_members_invested
+#         total = organization.total
+#         total_from_org_pac = organization.total_from_org_pac
+#         total_from_indivs = organization.total_from_indivs
+#         total_soft_money = organization.total_soft_money
+#         total_from_527 = organization.total_from_527
+#         total_to_dems = organization.
 
 
 def get_daily_list():
 
-    #figure out how to request a certain number of items every day
-
-    # ref = handle_ref()
+   
 
     candidate_ids = []
 
-    candidates_to_do = []
 
     with open('cand_ids.txt') as txt:
         for line in txt:
@@ -392,8 +451,60 @@ def get_daily_list():
 
 
    
+# def json_parsing():
 
-   
+#     #using backup file, add json as objects to db:
+#     # query db for organizations that are not in organizations
+#     #make the org_name the primary_key (because org_id is a string)
+#     #maybe open file into a list
+
+#     #add org_id and org_name to organization table
+
+
+#     # contributor_list = []
+
+#     with open('data/top_contributors_backup.json') as f:
+
+#         dictionary = {}
+
+#         for line in f:
+
+#             # contributors = line.split('\n')
+#             contributors = line.split()
+#             print(contributors)
+
+#             index = 0
+
+#             for item in contributors:
+#                 print((index, item))
+
+#                 index+=1
+
+#             cid = contributors[8]
+#             contrib_list = contributors[46:]
+
+#             dictionary[cid] = contrib_list
+
+#         print(dictionary)
+
+
+#         # for cid in dictionary.key:
+
+
+            
+
+
+
+
+
+
+
+               
+
+
+
+        
+
 
 
 

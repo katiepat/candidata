@@ -3,10 +3,18 @@
 
 <h1>Candidate Page</h1>
 
-<h3> Name: {{ candidate.cand_name }}</h3>
+<h3> Name: {{ candidate_name }}</h3>
+<h3> Total: ${{ candidate_summary.total }}
 <h3> Party: {{ candidate.party_id }} </h3>
-<h3> Opponent: {} </h3>
 <h3> District: {{ candidate.district_id }} </h3>
+<h3> Chamber: 
+    
+<h3> Opponent: </h3>
+    <ul>
+    {% for opp in opponent %}
+    <li><a href='/candidates/{{ opp.cid }}'>{{ opp.cand_name }} </a> ({{ opp.party_id }}): </li>
+    {% endfor %}
+ </ul>   
 
 
 
@@ -16,30 +24,35 @@
 
 <!-- for contributor in contributors, print all contributor information -->
 
-<ul>
-{% for contributor in contributors %}
 
-<li><h4>{{ contributor.organizations.org_name }}</h4>
+
+
+<ul>
+{% for organization in organizations %}
+
+<li><h4>{{ organization.orgs }}</h4>
     <ul>
-        <li>Total Amount to Candidate : {{ contributor.total }}</li>
-        <li><a href='/organizations/{{ contributor.org_id }}'> Link to Org page</a></li>
+        <li>Total Amount to Candidate : ${{ organization.total }}</li>
+        <li><a href='/organizations/{{ organization.org_id }}'> Link to Org page</a></li>
     </ul>
 </li>
 {% endfor %}
 </ul>
 
 
-<h3>Top Industries</h3>
+<h2>Top Industries</h2>
 
 <!-- for industry in industries, print all industry information -->
 <ul>
 
     {% for industry in industries %}
-    <li><h4>{{ industry.industry_id.industry_name }}</h4></li>
+    <li><h3>{{ industry.industry.industry_name }} ({{ industry.industry_id }})</h3></li>
     <ul>
-        <li>Total Amount </li>
-        <li>From PACs</li>
-        <li>From Individuals</li>
+        <li><h4>Total Amount: ${{ industry.total }}</h4></li>
+        <li>From PACs: ${{ industry.total_from_pacs }}</li>
+        <li>From Individuals: ${{ industry.total_from_indivs }}</li>
+
+    </ul>    
     {% endfor %}
 
     </ul>

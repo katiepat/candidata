@@ -2,14 +2,10 @@
 {% block content %}
 
 
-  <h1>Districts</h1>
-
-
-
+<h1>Candidates</h1>
  <p> Placeholder for selecting a state and a chamber to search</p>
-}
 
-<form action="/districts" method="get">
+<form action="/candidates" method="get">
  
  Select a State:
  <select name='state'>
@@ -20,14 +16,10 @@
 <br>
 
 Select a Chamber:
-
 <input type='radio' name='chamber' value='house'>House of Representatives
 <input type='radio' name='chamber' value='senate'>Senate
 
 <input type='submit'>
 </form>
 
-<ul>
-
-</ul>
 {% endblock %}

@@ -3,7 +3,7 @@
 from jinja2 import StrictUndefined
 
 
-from flask import Flask, render_template, request, flash, redirect, session
+from flask import Flask, render_template, request, flash, redirect, session, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 
 from model import Candidate, Candidate_Summary, Candidate_Industry, Industry, Organization, Candidate_Organization, connect_to_db, db
@@ -40,14 +40,14 @@ def index():
 
     return render_template("homepage.html")
 
-@app.route('/districts', methods=['GET'])
-def get_districts():
-    """Shows form to get districts by state"""
+# @app.route('/districts', methods=['GET'])
+# def get_districts():
+#     """Shows form to get districts by state"""
 
     
 
 
-    return render_template("districts.html", states=STATES, candidates=candidates)
+#     return render_template("districts.html", states=STATES)
 
 
 
@@ -60,20 +60,23 @@ def candidates_list():
 
 
 
+
+
+
     return render_template("candidates.html", states=STATES, candidates=candidates)
 
 
 
-@app.route('/candidates', methods=['GET'])
-def get_candidate_form():
+# @app.route('/candidates', methods=['GET'])
+# def get_candidate_form():
 
-    state = request.args.get('state')
+#     state = request.args.get('state')
 
-    chamber = request.args.get('chamber')
+#     chamber = request.args.get('chamber')
 
-    candidates = Candidate_Summary.query.filter(Candidate_Summary.state==state, Candidate_Summary.chamber==chamber).all()
+#     candidates = Candidate_Summary.query.filter(Candidate_Summary.state==state, Candidate_Summary.chamber==chamber).all()
 
-    return render_template('candidates.html', candidates=candidates)
+#     return render_template('candidates.html', candidates=candidates)
 
 
 
@@ -86,17 +89,50 @@ def candidate_cycle_summary(cid):
     #write query for cid in db--> return summary information
     candidate = Candidate.query.get(cid)
 
-    candidate_summary = Candidate_Summary.query.filter(Candidate_Summary.cid == cid).all()
+    candidate_name = candidate.cand_name
 
-    contributors = Candidate_Organization.query.filter(Candidate_Organization.cid == cid).all()
+    candidate_name = candidate_name[1:(len(candidate_name)-1)]
+ 
+
+    candidate_name = candidate_name.split(',')
+
+    candidate_fname = candidate_name[1]
+    candidate_lname = candidate_name[0]
+
+    candidate_name = f"{candidate_fname}{candidate_lname}"
+
+    candidate_summary = Candidate_Summary.query.filter(Candidate_Summary.cid == cid).first()
+
+    opponent = Candidate.query.filter(Candidate.district_id == candidate.district_id, Candidate.cid != cid).all()
+    
+    # cand_orgs = Candidate_Organization.query.filter(Candidate_Organization.cid == cid).all()
+    organizations = Candidate_Organization.query.filter(Candidate_Organization.cid == cid).all()
+
+    # org_names = Organization.query.filter(Organization.org_summary_id == organizations.org_id).all()
+
+    # organizations = Organization.query.filter(Organization.cand_orgs.cid == cid).all()
+
+    # organizations = Candidate.query
+    # org_info = []
+
+    # for organization in organizations:
+    #     name = Organization.query.filter(Organization.org_summary_id == organization.org_id).all()
+
+    #     info = org_info.append(name)
 
     industries = Candidate_Industry.query.filter(Candidate_Industry.cid == cid).all()
 
+    
+
+
     return render_template("candidate.html", 
-                        candidate=candidate,
-                        candidate_summary=candidate_summary, 
-                        contributors=contributors, 
-                        industries=industries)
+                    candidate=candidate,
+                    candidate_name=candidate_name,
+                    opponent=opponent,
+                    candidate_summary=candidate_summary, 
+                    organizations=organizations, 
+                    industries=industries)
+        
 
 
 
@@ -125,7 +161,52 @@ def get_organization_summary(org_summary_id):
 
     organization = Organization.query.get(org_summary_id)
 
-    return render_template('organization.html', organization=organization)
+    # candidates = Candidate_Organization.query.filter(Candidate_Organization.org_id == org_summary_id).all()
+
+    candidates = Candidate_Organization.query.filter(Candidate_Organization.org_id == org_summary_id).all()
+
+    
+    print(candidates)
+
+    # cand_orgs = Candidate_Organization.query.filter_by(org_id = organization.org_summary_id).all()
+    # print(cand_orgs)
+    # cids = cand_orgs.cid.all()
+
+    # cids = []
+    # print(cids)
+
+    # candidates = []
+
+    # for org in cand_orgs:
+        
+    #     cid = org.cid
+        
+    #     cids.append(cid)
+
+
+    # for cid in cids:
+    #     candidate = Candidate.query.get(cid)
+
+    #     candidates.append(candidate)    
+
+
+
+    return render_template('organization.html', organization=organization, candidates=candidates, error_message=None)
+
+
+
+@app.route('/districts', methods=['GET'])
+def show_district_form():
+
+
+    districts = Candidate.district_id.query.all()
+#     districts = Candidate.query(Candidate.all()
+
+
+
+    return render_template('districts_by_state.html', states=STATES)
+
+
 
 
 # @app.route('/districts', methods=['GET'])
@@ -133,13 +214,22 @@ def get_organization_summary(org_summary_id):
 #     """ shows list of districts by state"""
 
 #     state = request.args.get('state')
-#     chamber = request.args.get('chamber')
 
-#     candidates = Candidate_Summary.query.filter(Candidate_Summary.state == state, Candidate_Summary.chamber == chamber).all()
+#     # chamber = request.args.get('chamber')
+
+#     # candidates = Candidate_Summary.query.filter(Candidate_Summary.state == state, Candidate_Summary.chamber == chamber).all()
+#     districts = Candidate.query.filter(Candidate.district_id.like('%state%')).all()
+
+    
 
 
 
-#     return render_template('districts_by_state.html', candidates=candidates)
+
+
+
+
+
+    # return render_template('districts/district_by_state.html', districts=districts, state=state)
 
 
 

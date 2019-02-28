@@ -1,26 +1,45 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h1>{{ organization.org_name }}</h1>
+<h1>{{ organization.org_name }} {{ organization.org_summary_id }}</h1>
 
 <h4> Number of members : {{ organization.num_members_invested }}
 
-<h3> Total Amount for Cycle : {{ organization.total }}</h3>
+<h2>Which campaigns did they give to?</h2>
 <ul>
-    <li>Individuals : {{ organization.total_from_indivs }}</li>
-    <li> PACs : {{ organization.total_from_org_pac }}</li>
-    <li>Soft Money : {{ organization.total_soft_money }}</li>
-    <li>Total 527 : {{ organization.total_from_527 }}</li>
-    <li>Dems : {{ organization.total_to_dems }} </li>
-    <li>Repubs : {{ organization.total_to_repubs }}</li>
-    <li>lobbying : {{ organization.total_spent_on_lobbying }}</li>
-    <li>outside money : {{ organization.total_spent_on_outside_money }}</li>
-    <li>gave to pac : {{ organization.gave_to_pac }}</li>
-    <li>gave to party : {{ organization.gave_to_party }}</li>
-    <li>gave to 527 : {{ organization.gave_to_527 }}</li>
-    <li>gave to candidate : {{ organization.gave_to_cand }}</li>
+    {{ candidates }}
+
+    {% if candidates %}
+        {% for candidate in candidates %}
+        <li>{{ candidate.candidate.cand_name }}</li>
+
+        {% endfor %}
+    {% endif %}
+    
+    {% if error_message %}
+        {{ error_message }}
+
+    {% endif %}        
+</ul>            
+
+
+<h3> Total Amount for Cycle : ${{ organization.total }}</h3>
+<ul>
+    <li>Individuals : ${{ organization.total_from_indivs }}</li>
+    <li> PACs : ${{ organization.total_from_org_pac }}</li>
+    <li>Soft Money : ${{ organization.total_soft_money }}</li>
+    <li>Total 527 : ${{ organization.total_from_527 }}</li>
+    <li>Dems : ${{ organization.total_to_dems }} </li>
+    <li>Repubs : ${{ organization.total_to_repubs }}</li>
+    <li>lobbying : ${{ organization.total_spent_on_lobbying }}</li>
+    <li>outside money : ${{ organization.total_spent_on_outside_money }}</li>
+    <li>gave to pac : ${{ organization.gave_to_pac }}</li>
+    <li>gave to party : ${{ organization.gave_to_party }}</li>
+    <li>gave to 527 : ${{ organization.gave_to_527 }}</li>
+    <li>gave to candidate : ${{ organization.gave_to_cand }}</li>
 
 </ul>
+
 
 
 {% endblock %}

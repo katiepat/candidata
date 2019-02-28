@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1> Districts </h1>
+
+{{ state }}
+<ul>
+{% for district in districts %}
+    
+
+    <li>{{ district.district_id }}</li>
+
+</ul>
+{% endblock %}
