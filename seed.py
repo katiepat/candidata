@@ -12,7 +12,7 @@ from model import Candidate, Candidate_Summary, Candidate_Industry, Industry, Or
 
 
 # create variable to store api key
-api_key = '7812644905e2e95248492bd13c40168a'
+api_key = '/secrets.sh'
 
 output = 'json'
 
@@ -356,7 +356,7 @@ def get_org_summary(org_id):
 
         org_summary = org_summary['response']['organization']['@attributes']
 
-        org_id = org_summary['orgid']
+        crp_id = org_summary['orgid']
         org_name = org_summary['orgname']
         total = float(org_summary['total'])
         indivs = float(org_summary['indivs'])
@@ -377,7 +377,7 @@ def get_org_summary(org_id):
         
 
 
-        organization = Organization(org_name=org_name, total=total,
+        organization = Organization(org_name=org_name, total=total, crp_id=crp_id,
                         total_from_indivs=indivs, total_from_org_pac=pacs, total_soft_money=soft, 
                         total_from_527=tot527, total_to_dems=dems, total_to_repubs=repubs, 
                         total_spent_on_lobbying=lobbying, total_spent_on_outside_money=outside, num_members_invested=mems_invested, 
@@ -387,50 +387,162 @@ def get_org_summary(org_id):
         db.session.add(organization)
         db.session.commit()
 
+
+
+
+
+
 def get_house_winners():
 
+    candidates = db.session.query(Candidate.cand_name, Candidate.cid, Candidate.district_id).all()
+    
+    
+ 
+
+    names_to_check = []
+
+
+      
+    
     with open('data/district_house_winners.txt') as txt:
         for line in txt:
-            (name, state, district_num) = line.strip().split()
+        
+            line = line.rstrip().split(" ")
+            name = [line[0], line[1]]
 
-            candidate_query = Candidate.query.filter(Candidate.cand_name == name).all()
+            name_join = " ".join(name)
 
-            if candidate_query:
-                candidate_query.win = True
+
+            candidate = Candidate.query.filter(Candidate.cand_name.like(f'%{name_join}%')).first()
+            
+            if candidate:
+                candidate.win = True
+
+                db.session.add(candidate)
+                db.session.commit()
+
+            else:
+                names_to_check.append(name_join)
+            
+
+
+    return names_to_check
+            # candidate = candidate_sets.get(name_join)
+
+def add_summary_id():
+
+    summaries_to_check = []
+
+
+    candidates = Candidate.query.all()
+
+    for candidate in candidates:
+        cid = candidate.cid
+
+        candidate_summary = Candidate_Summary.query.filter(Candidate_Summary.cid.like(f'%{cid}')).first()
+        
+        if candidate_summary:
+            summary_id = candidate_summary.cand_summary_id
+            candidate.cand_summary_id = summary_id
+            db.session.add(candidate)
+            db.session.commit()
+
+        else:
+            summaries_to_check.append(candidate)
+
+    return summaries_to_check            
+
+def get_contributor_names():
+
+
+    file = open('data/top_contributors_backup.json').read()
+
+    file = file.split()
+
+    
+
+    # file = file.split()
+
+    # counter = 1
+
+    for line in file:
+
+        print(line)
+
+        
+
+        # counter += 1
+
+        line = line.get('@attributes')
+
+        if line:
+
+            cid = line['cid']
+
+            # candidate_contributors = Candidate_Organization.query.filter(Candidate_Organization.cid == cid).all()
+            # print(candidate_contributors)
+
+            organizations = line['contributor']
+
+            if type(organizations) != str:
+
+                for organization in organizations:
+                    if type(organization) == dict:
+
+                        org_name = organization['@attributes']['org_name']
+                        total = float(organization['@attributes']['total'])
+                        pacs = float(organization['@attributes']['pacs'])
+                        indivs = float(organization['@attributes']['indivs']) 
+
+                        # create candidate_org object using new
+
+                        for contributor in candidate_contributor:
+                            if contributor.total == total and contributor.pacs == pacs and contributor.indivs == indivs:
+                                contributor.org_name = org_name
+                                db.session.add(contributor)
+                                db.session.commit()
+
+                        
+                                 
+
+
+
+
+
+
+
+
+
 
 
 
 def get_senate_winners():
     """ seeds list of winner"""
-
+    names_to_check = []
 
 
     with open('data/senate_winners.txt') as txt:
         for line in txt:
-            name = line.strip().split()
+            name = line.rstrip()
 
-            candidate_query = Candidate.query.filter(Candidate.cand_name == name).all()
+            candidate_query = Candidate.query.filter(Candidate.cand_name.like(f'%{name}%')).first()
 
-            if candidate_query:
-                candidate_query.win = True                
+            if candidate_query != None:
+                
+                candidate_query.win = True
+                
+                db.session.add(candidate_query)
+                
+                db.session.commit()
+
+            else:
+                names_to_check.append(name)
+
+    return names_to_check
+                                
         
 
-# def seed_db_org_info():
-#     """ uses information from first db and seeds into second db"""
 
-
-#     organizations = Organization.query.all()
-
-#     for organization in organization:
-
-#         org_name = organization.org_name
-#         num_members_invested = organization.num_members_invested
-#         total = organization.total
-#         total_from_org_pac = organization.total_from_org_pac
-#         total_from_indivs = organization.total_from_indivs
-#         total_soft_money = organization.total_soft_money
-#         total_from_527 = organization.total_from_527
-#         total_to_dems = organization.
 
 
 def get_daily_list():

@@ -88,28 +88,20 @@ class Candidate(db.Model):
     cand_name = db.Column(db.String(250), nullable=False)
     party_id = db.Column(db.String(50), nullable=False)
     district_id = db.Column(db.String(100), nullable=False)
+
+    #added boolean column to indicate win or loss
+    win = db.Column(db.Boolean, nullable=True)
     
     cand_summary_id = db.Column(db.Integer, 
                     db.ForeignKey('candidate_summaries.cand_summary_id'), 
                     nullable=True)
                  
-    top_industries = db.Column(db.Integer,
-                    db.ForeignKey('candidate_industries.candidate_industry_id'), 
-                    nullable=True)
-                    
-    top_organizations = db.Column(db.Integer, 
-                        db.ForeignKey('candidate_organizations.candidate_org_id'), 
-                        nullable=True)
+   
                        
-    
 
-
-    cand_industries = db.relationship('Candidate_Industry', foreign_keys=[top_industries])
-    # industries = db.relationship('Industry', secondary='candidate_industries', backref='candidates')
-    summary = db.relationship('Candidate_Summary', foreign_keys=[cand_summary_id])
+    summary = db.relationship('Candidate_Summary', foreign_keys=[cand_summary_id], backref='summary')
     
-    cand_orgs = db.relationship('Candidate_Organization', foreign_keys=[top_organizations])
-    # organizations = db.relationship('Organization', secondary='candidate_organizations', backref='candidates')    
+      
 
 
 class Organization(db.Model):
@@ -117,16 +109,21 @@ class Organization(db.Model):
 
     __tablename__ = 'organizations'
 
-    #use org id from CRP
-    org_summary_id = db.Column(db.String(50), nullable=False, primary_key=True)
+    #create new primary key
+    org_id = db.Column(db.Integer, autoincrement=True, nullable=False, primary_key=True)
     
-
+    #use org name in both tables
     org_name = db.Column(db.String(200), nullable=False)
+
+    #crp id
+
+    crp_id = db.Column(db.String(100), nullable=True)    
+
     #number of members invested in organization (int)
-    num_members_invested = db.Column(db.Integer, nullable=False)
+    num_members_invested = db.Column(db.Integer, nullable=True)
 
     #total contributions (int)
-    total = db.Column(db.Float(), nullable=False)
+    total = db.Column(db.Float(), nullable=True)
 
     #total from organization's PAC
     total_from_org_pac = db.Column(db.Float(), nullable=True)
@@ -161,11 +158,11 @@ class Organization(db.Model):
     #total given to candidates
     gave_to_cand = db.Column(db.Float(), nullable=True)
 
-    #total given to party committees"
+    #total given to party committees
     gave_to_party = db.Column(db.Float(), nullable=True)
 
 
-    cand_orgs = db.relationship('Candidate_Organization')
+    cand_orgs = db.relationship('Candidate_Organization', backref='organization')
     # candidates = db.relationship('Candidate', secondary='candidate_organizations', backref='organizations' )
 
 
@@ -182,19 +179,19 @@ class Candidate_Organization(db.Model):
 
     candidate_org_id = db.Column(db.Integer, nullable=False, autoincrement=True, primary_key=True)
     
-    cid = db.Column(db.String(100), db.ForeignKey('candidates.cid'), nullable=True)
-    org_id = db.Column(db.String(100), db.ForeignKey('organizations.org_summary_id'), nullable=True)
+    
+    org_id = db.Column(db.Integer, db.ForeignKey('organizations.org_id'), nullable=True)
+    org_name = db.Column(db.String(200), nullable=False)
+    cid = db.Column(db.String(100), db.ForeignKey('candidates.cid'), nullable=False)
     total = db.Column(db.Float(), nullable=False)
     pacs = db.Column(db.Float(), nullable=True)
     individuals = db.Column(db.Float(), nullable=True)
 
-    orgs = db.relationship('Organization', foreign_keys=[org_id])
+    orgs = db.relationship('Organization', foreign_keys=[org_id], backref='orgs')
 
     candidate = db.relationship('Candidate', foreign_keys=[cid])
 
-    # candidate = db.relationship('Candidate', backref=db.backref('candidate_organizations', order_by=candidate_org_id))
 
-    # organization = db.relationship('Organization', backref=db.backref('candidate_organizations', order_by=candidate_org_id))
 
 
 
