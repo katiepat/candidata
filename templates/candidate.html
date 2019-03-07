@@ -1,18 +1,25 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h1>Candidate Page</h1>
 
-<h3> Name: {{ candidate_name }}</h3>
+
+<h1> Name: {{ candidate_name }}</h1>
 <h3> Total: ${{ candidate_summary.total }}
 <h3> Party: {{ candidate.party_id }} </h3>
 <h3> District: {{ candidate.district_id }} </h3>
-<h3> Chamber: 
+{% if candidate_summary.chamber == 'S' %}
+
+<h3> Chamber: Senate </h3>
+{% endif %}
+{% if candidate_summary.chamber == 'H' %}
+<h3> Chamber: House </h3>
+{% endif %}
+
     
 <h3> Opponent: </h3>
     <ul>
     {% for opp in opponent %}
-    <li><a href='/candidates/{{ opp.cid }}'>{{ opp.cand_name }} </a> ({{ opp.party_id }}): </li>
+    <li><a href='/candidates/{{ opp.cid }}'>{{ opp.cand_name }}</a> ({{ opp.party_id }}): </li>
     {% endfor %}
  </ul>   
 
@@ -55,7 +62,37 @@
     </ul>    
     {% endfor %}
 
-    </ul>
- 
+</ul>
+
+<h2>Industry Chart</h2>
+
+<div class='industry-chart'>
+    <canvas id='donutChart'></canvas>
+    <div id='donutLegend' class='chart-legend'></div>
+</div>
+
+
+
+<script>
+    const options = {
+        responsive: true
+    };
+
+    let ctx_donut = $("#donutChart").get(0).getContext("2d");
+
+    $.get("/candidates/<cid>.json", function (data) {
+        let myDonutChart = new Chart(ctx_donut, {
+                                type: 'doughnut',
+                                data: data,
+                                options: options
+                                });
+
+    $('#donutLegend').html(myDonutChart.generateLegend());
+    }); 
+</script>
+
+
+
 
 {% endblock %}
+

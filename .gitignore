@@ -3,3 +3,4 @@ env/
 __pycache__
 
 secrets.sh
+/seed2.py

@@ -11,8 +11,9 @@ from server import app
 from model import Candidate, Candidate_Summary, Candidate_Industry, Industry, Organization, Candidate_Organization, connect_to_db, db
 
 
+
 # create variable to store api key
-api_key = '/secrets.sh'
+api_key = '7812644905e2e95248492bd13c40168a'
 
 output = 'json'
 
@@ -304,34 +305,102 @@ def get_cand_contributions(cids):
                                 db.session.commit()
 
                                 #if org_id is true --> organization was instantiated in org_summary function
-                                org_id = get_org_id(org_name)
+                                # org_id = get_org_id(org_name)
 
-                                #checks to see if org name is in the organization table
-                                org_query = Organization.query.filter(Organization.org_name == org_name).first()
+                                # #checks to see if org name is in the organization table
+                                # org_query = Organization.query.filter(Organization.org_name == org_name).first()
                              
-                                #if org wasn't instantiated in the get_org_id function and if the database doesn't return an object, instantiate an org object
-                                if org_id == False and org_query == None:
+                                # #if org wasn't instantiated in the get_org_id function and if the database doesn't return an object, instantiate an org object
+                                # if org_id == False and org_query == None:
 
                                     
                                     
-                                    organization = Organization(org_name=org_name, total=total, total_from_org_pac=pacs, total_from_indivs=indivs)
+                                #     organization = Organization(org_name=org_name, total=total, total_from_org_pac=pacs, total_from_indivs=indivs)
 
-                                    db.session.add(organization)
-                                    db.session.commit()
+                                #     db.session.add(organization)
+                                #     db.session.commit()
 
 
-                                #if org wasn't instantiated in the get_org_id but database is returning an org object with that name
-                                elif org_id == False and org_query != None:
+                                # #if org wasn't instantiated in the get_org_id but database is returning an org object with that name
+                                # elif org_id == False and org_query != None:
 
-                                    #updates org totals, and commit to database
+                                #     #updates org totals, and commit to database
 
-                                    org_query.total += total
+                                #     org_query.total += total
 
-                                    org_query.total_from_org_pac += pacs
+                                #     org_query.total_from_org_pac += pacs
 
-                                    org_query.total_from_indivs += indivs
+                                #     org_query.total_from_indivs += indivs
 
-                                    db.session.commit()
+                                #     db.session.add(org_query)
+                                #     db.session.commit()
+
+def update_state():
+
+    candidates = Candidate.query.all()
+
+    for candidate in candidates:
+        district_id = candidate.district_id
+        cid = candidate.cid
+
+        state = district_id[:2]
+
+        print(state)
+
+        candidate_summary = Candidate_Summary.query.filter(Candidate_Summary.cid.like(f'%{cid}')).first()
+
+        if candidate_summary:
+            candidate_summary.state = state
+
+            db.session.add(candidate_summary)
+            db.session.commit()
+
+
+
+
+
+
+
+def update_chamber():
+
+    candidates = Candidate.query.all()
+
+
+    for candidate in candidates:
+        district_id = candidate.district_id
+        # print(district_id)
+        cid = candidate.cid
+
+        senate = 'S1'
+        state = district_id[:2]
+        district_id = district_id[2:]
+        # print(district_id)
+
+
+        if district_id == senate:
+
+            candidate_summary = Candidate_Summary.query.filter(Candidate_Summary.cid.like(f'%{cid}')).first()
+
+
+            # print(candidate_summary)
+
+            if candidate_summary:
+
+
+                candidate_summary.chamber = 'S'
+
+                db.session.add(candidate_summary)
+                db.session.commit()
+
+        
+        else:
+            candidate_summary = Candidate_Summary.query.filter(Candidate_Summary.cid.like(f'%{cid}')).first()
+            
+            if candidate_summary:
+                candidate_summary.chamber = 'H'
+
+                db.session.add(candidate_summary)
+                db.session.commit()    
 
 
 
@@ -452,12 +521,15 @@ def add_summary_id():
 
     return summaries_to_check            
 
+
+
 def get_contributor_names():
 
 
     file = open('data/top_contributors_backup.json').read()
 
     file = file.split()
+
 
     
 
@@ -467,40 +539,45 @@ def get_contributor_names():
 
     for line in file:
 
-        print(line)
+        
+        if item == 'cid':
+            cid = line[item] + 1
+            print(cid)
+
+
 
         
 
         # counter += 1
 
-        line = line.get('@attributes')
+        # line = line.get('@attributes')
 
-        if line:
+        # if line:
 
-            cid = line['cid']
+        # cid = line['cid']
 
-            # candidate_contributors = Candidate_Organization.query.filter(Candidate_Organization.cid == cid).all()
-            # print(candidate_contributors)
+        # candidate_contributors = Candidate_Organization.query.filter(Candidate_Organization.cid == cid).all()
+        # print(candidate_contributors)
 
-            organizations = line['contributor']
+        # organizations = line['contributor']
 
-            if type(organizations) != str:
+        # if type(organizations) != str:
 
-                for organization in organizations:
-                    if type(organization) == dict:
+        #     for organization in organizations:
+        #         if type(organization) == dict:
 
-                        org_name = organization['@attributes']['org_name']
-                        total = float(organization['@attributes']['total'])
-                        pacs = float(organization['@attributes']['pacs'])
-                        indivs = float(organization['@attributes']['indivs']) 
+        #             org_name = organization['@attributes']['org_name']
+        #             total = float(organization['@attributes']['total'])
+        #             pacs = float(organization['@attributes']['pacs'])
+        #             indivs = float(organization['@attributes']['indivs']) 
 
-                        # create candidate_org object using new
+        #             # create candidate_org object using new
 
-                        for contributor in candidate_contributor:
-                            if contributor.total == total and contributor.pacs == pacs and contributor.indivs == indivs:
-                                contributor.org_name = org_name
-                                db.session.add(contributor)
-                                db.session.commit()
+        #             for contributor in candidate_contributor:
+        #                 if contributor.total == total and contributor.pacs == pacs and contributor.indivs == indivs:
+        #                     contributor.org_name = org_name
+        #                     db.session.add(contributor)
+        #                     db.session.commit()
 
                         
                                  
@@ -508,16 +585,9 @@ def get_contributor_names():
 
 
 
-
-
-
-
-
-
-
-
 def get_senate_winners():
     """ seeds list of winner"""
+
     names_to_check = []
 
 

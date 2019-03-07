@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h1>{{ organization.org_name }} {{ organization.org_summary_id }}</h1>
+<h1>{{ organization.org_name }} {{ organization.org_id }}</h1>
 
 <h4> Number of members : {{ organization.num_members_invested }}
 
@@ -16,10 +16,7 @@
         {% endfor %}
     {% endif %}
     
-    {% if error_message %}
-        {{ error_message }}
-
-    {% endif %}        
+          
 </ul>            
 
 

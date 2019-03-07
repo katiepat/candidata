@@ -8,9 +8,15 @@
 {% for candidate in candidates %}
 
     
-    <li><a href='/candidates/{{ candidate.cid }}'>{{ candidate.candidate.cand_name }}</a>: ${{ candidate.total }} </li>
+    <li><a href='/candidates/{{ candidate.cid }}'>{{ candidate.candidate.cand_name }} </a>: {{ candidate.total }}</li>
 
 {% endfor %}
+
+<br><br>
+
+<form action='/candidates' method='get'>
+    <input type='submit' value='Show more candidates'>
+</form>
 
 {% endblock %}
 
