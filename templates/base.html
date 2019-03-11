@@ -3,9 +3,9 @@
 <head>
 
      <title>Candidata</title>
-      <!-- <meta charset="utf-8"> -->
-<!-- 
-  <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+      <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/static/style.css">
  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <!-- Javascript imports -->
@@ -18,8 +18,9 @@
 
 
 <script>
+
   
-  $( function() {
+let autocomplete =  $( function() {
     var availableTags = [
    "Scott, Rick",
     "O'Rourke, Beto",
@@ -2508,11 +2509,38 @@
     "Harrell, Sally",
     "Silifies, Tim"
     ];
-    $("#tags").autocomplete({
-      source: availableTags
-    });
-  });
+    $("#tags").autocomplete({ 
+      source: availableTags,
+      select: function(event, ui) {              
+        // console.log(ui.item.value)
+
+        // // ui: candName;            
+        // event: 'click'
+
+        // console.log(candName);
+
+        
+      }
+      });
+    } );
+
+
+
+// $("#tags").on("autocompleteselect", function(event, ui) {}); 
+    // {
+        // ui : ui.item.value,
+        // event: 'autocompleteselect'
+    // } );
+
+   
+    
+
+   
+
+ 
   </script>
+
+<h1>Candidata</h1>  
 </head>
 
 
@@ -2526,13 +2554,19 @@
 
 </div>
 
-<div class="ui-widget">
-  <form action="/candidates" method="get"> 
-  <label for="tags">Search Candidates: </label>
-  <input id="tags">
-  <input type="submit" value="search">
+<div class='ui-widget'>
+ <form action='/candidates' method='POST' name='search-box'>
+
+  <label for='tags'>Search Candidates: </label>
+  <input type='text' id='tags' name='tags'>
+  <input type='submit' value='search'>
+  <!-- <input type='submit' value='search'> -->
 </form>
+  <!-- <input type="submit" value="search"> -->
+  
+
 </div>
+
 
 
 
@@ -2544,7 +2578,10 @@
   Put your body here.
 {% endblock %}
 
+
+
 <footer>FOOTER GOES HERE</footer>
+
 </body>
 
 </html>

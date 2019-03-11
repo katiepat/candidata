@@ -4,19 +4,25 @@
 <h1>Candidates</h1>
 
 <ul>
+<h3>Top 10 Senators</h3>
+{% for senator in top_10_senators %}
 
-{% for candidate in candidates %}
+    
+    <li><a href='/candidates/{{ senator.cid }}'>{{ senator.candidate.cand_name }} </a>: {{ senator.total }}</li>
+
+{% endfor %}
+
+<br><br>
+
+<h3>Top 25 Candidates</h3>
+{% for candidate in top_25_house_cands %}
 
     
     <li><a href='/candidates/{{ candidate.cid }}'>{{ candidate.candidate.cand_name }} </a>: {{ candidate.total }}</li>
 
 {% endfor %}
 
-<br><br>
 
-<form action='/candidates' method='get'>
-    <input type='submit' value='Show more candidates'>
-</form>
 
 {% endblock %}
 

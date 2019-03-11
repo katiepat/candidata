@@ -1,14 +1,22 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h1>Campaign Finance Monitor 2018</h1>
 
-<h2>Search by State or District</h2>
-<p> 
-    <form action='/districts' method='get'>
-        <type></type>
-    <a href='/districts'>Search District Races by State</a>
-</p>
+<div class='contributor-chart'>
+      <canvas id='pieChart'></canvas>
+    <div id='pieLegend' class='chart-legend'></div>
+</div>
+
+<h1> ${{ sum_total }}</h1>
+
+<h2> Number of Candidates: {{ num_candidates }} </h2>
+
+
+ <div class='contributor-chart'>
+      <canvas id='distBarChart'></canvas>
+    <div id='distBarLegend' class='chart-legend'></div>
+</div>
+
 
 
 <h2>Candidates</h2>
@@ -21,5 +29,62 @@
 <p>
     <a href='/organizations'>Search by Organization</a>
 </p>
+
+<!-- <div class='contributor-chart'>
+      <canvas id='pieChart'></canvas>
+    <div id='pieLegend' class='chart-legend'></div>
+</div> -->
+
+<script>
+
+
+ const options = {
+        responsive: true
+    };
+
+    let ctx_pie = $("#pieChart").get(0).getContext("2d");
+
+    
+
+    // console.log(cid);
+
+    $.get('/json', function (data) {
+        // console.log(data);
+        var myPieChart = new Chart(ctx_pie, {
+            type: 'pie',
+            data: data,
+            options: options
+});
+
+        $('#pieLegend').html(myPieChart.generateLegend());
+
+        }); 
+
+
+let distBarChart = $('#distBarChart').get(0).getContext('2d');
+
+    $.get('/district_summaries.json', function (data) {
+        // console.log(data);
+        let myDistBarChart = new Chart(distBarChart, {
+                        type: 'bar',
+                        data: data,
+                        options: options
+                        }); 
+
+        $('#distBarLegend').html(myDistBarChart.generateLegend());
+    });
+
+let winnerLineChart = $('#winnerLineChart').get(0).getContext('2d');
+    $.get('')
+
+var myLineChart = new Chart(ctx, {
+    type: 'line',
+    data: data,
+    options: options
+});
+
+
+
+</script>
 
 {% endblock %}

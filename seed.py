@@ -29,7 +29,7 @@ def handle_ref():
     """ Turn txt doc into python dictionary """
   
    
-    with open('cand_ids.txt') as txt:
+    with open('data/cand_ids.txt') as txt:
         for line in txt:
             (CID, cand_name, party_id, district_id, fec_cand_id) = line.strip().split("\t")
 
@@ -49,7 +49,10 @@ def handle_ref():
 
     return print('All Done')
 
+def get_missing_org_names(cids):
     
+    candidates = Candidate_Organization.query.filter(Candidate_Organization.org_name == None).all()
+    print(candidates)    
  
 
 
