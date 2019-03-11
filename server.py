@@ -149,7 +149,7 @@ def show_district_summary_graph():
     cand_by_district = Candidate.query.all()
     
     # print(races_by_district)
-
+    bad_ids = {'NVS1', 'UTS1', 'VTS1', 'FLS1', 'MNS1', 'MTS1', 'MAS1', 'RIS1', 'MIS2', 'NDS2', 'NMS1', 'HIS2', 'MSS2', 'WYS1', 'PAS2', 'NJS1'}
     district_ids = []
 
     reps_total = []
@@ -193,7 +193,9 @@ def show_district_summary_graph():
                             third_total.append(total)
                             # district_ids.append(district_id)
                     
-                    district_ids.append(district_id)
+
+                    if district_id not in bad_ids:        
+                        district_ids.append(district_id)
             else:
                     pass             
 
@@ -297,10 +299,10 @@ def get_candidate_page():
     
             return redirect(f'candidates/{cid}')
 
-@app.route('/what_does_it_all_mean')
+@app.route('/what-does-it-all-mean')
 def show_terms():
 
-    render_template('terms.html')
+    return render_template('terms.html')
 
 
 
@@ -540,8 +542,23 @@ def organization_list():
 
     return render_template('organizations.html', organizations=organization_list)
 
+@app.route('/organizations', methods=['POST'])
+def organization_search():
+
+    organization_list = Organization.query.all()
+
+    org_name = request.form.get('tags')
+
+    for org in organization_list:
+        if org.org_name == org_name:
+
+            org_id = org.org_id
+
+            return redirect(f'organizations/{org_id}')
 
 
+
+    
 
 
 
@@ -576,18 +593,69 @@ def get_organization_summary(org_id):
     
 
 
-    return render_template('organization.html', organization=organization, candidates=candidates)
+    return render_template('organization.html', organization=organization, candidates=candidates, org_id=org_id)
 
 
 
-# @app.route('/organizations/<org_id>/raised.json')
-# def show_org_data(org_id):
+@app.route('/organizations/<org_id>/raised.json')
+def show_org_data(org_id):
 
-#     organization_summary = Organization.query.get(org_id)
-
-
+    organization = Organization.query.get(org_id)
 
 
+
+    if organization:
+        total_from_individuals = int(organization.total_from_indivs)
+        from_org_pac = int(organization.total_from_org_pac)
+        from_527 = int(organization.total_from_527)
+        soft_money = int(organization.total_soft_money)
+
+        
+
+        backgroundColor = ['#FF0000', '#4EC7EC', '#A9A9A9', 'fffdd0']
+        labels_list = ["From Individuals", "From Organization's PAC", "From Organization's 527"]
+        data_list= [total_from_individuals, from_org_pac, from_527, soft_money]
+
+
+
+
+    data_dict = {
+                'datasets' : [
+                {
+                    'data' : data_list,
+                    'backgroundColor' : backgroundColor
+                }],
+                'labels' : labels_list
+    }
+    
+
+    return jsonify(data_dict)
+
+
+@app.route('/organizations/<org_id>/party-comparison.json')
+def show_given_to_parties(org_id):
+
+    organization = Organization.query.get(org_id)
+
+    gave_to_reps = organization.total_to_repubs
+    gave_to_dems = organization.total_to_dems
+
+    backgroundColor = ['#FF0000', '#4EC7EC']
+    data_list = [gave_to_reps, gave_to_dems]
+    labels_list = ['Republican Party', 'Democratic Party']
+
+
+    data_dict = {
+                'datasets' : [
+                {
+                    'data' : data_list,
+                    'backgroundColor' : backgroundColor
+                }],
+                'labels' : labels_list
+    }
+    
+
+    return jsonify(data_dict)
 
 
 
